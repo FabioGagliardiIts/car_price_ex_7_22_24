@@ -1,0 +1,12 @@
+numpy==2.0.0
+pandas==2.2.2
+matplotlib==3.9.1
+seaborn==0.13.2
+scikit-learn==1.5.1
+fastapi==0.111.0
+pypmml==0.9.17
+sklearn2pmml==0.109.0
+
+
+
+
