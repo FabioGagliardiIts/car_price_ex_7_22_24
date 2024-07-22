@@ -143,7 +143,11 @@ try:
     db = sqlite3.connect('db.sqlite3')
     cursor = db.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS
-                      users(id INTEGER PRIMARY KEY, name TEXT, phone TEXT, email TEXT, password TEXT)''')
+                      users(id INTEGER PRIMARY KEY,
+                       name TEXT,
+                        phone TEXT, 
+                        email TEXT, 
+                        password TEXT)''')
     db.commit()
 except Exception as e:
     # This is called a catch-all clause.

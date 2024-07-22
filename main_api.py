@@ -21,7 +21,8 @@ async def read_root():
 
 @app.get("/db/{collection_id}")
 async def create_collection(collection_id: str):
-    db.create_collection(collection_id)
+    collection = db.connect_collection(collection_id)
+    collection.close()
     return {"result": 'ok'}
 
 

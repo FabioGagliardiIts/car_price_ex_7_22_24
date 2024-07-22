@@ -1,6 +1,11 @@
 from pathlib import Path
 import sqlite3
+import pandas as pd
+import requests
+from io import StringIO
 
+# Definizione del Path
+# in queste tre righe ho risolto l'accesso al database
 _DB_PATH_FILE = Path(__file__).resolve()
 _DB_PATH_DIR = _DB_PATH_FILE.parent
 _DB_PATH_DATA = _DB_PATH_DIR.joinpath("data")
@@ -10,7 +15,8 @@ def check_path():
     return _DB_PATH_DIR.exists()
 
 
-def create_collection(db_name: str):
+def connect_collection(db_name: str):
+    global db
     db_name += ".sqlite"
     try:
         db_path = _DB_PATH_DATA.joinpath(db_name)
@@ -19,48 +25,42 @@ def create_collection(db_name: str):
     except sqlite3.OperationalError as e:
         print("Could not connect to database ", e)
     finally:
-        db.close()
+        return db
 
 
-##Modifiche Dammacco
 
-from pathlib import Path
-import sqlite3
-import pandas as pd
-import requests
-from io import StringIO
-
-# Definizione del Path
-# in queste tre righe ho risolto l'accesso al database
-_DB_PATH_FILE = Path(__file__).resolve()
-_DB_PATH_DIR = _DB_PATH_FILE.parent
-_DB_PATH_DATA = _DB_PATH_DIR.joinpath('data')
-
-def check_path():
-    print(_DB_PATH_DIR)
 
 #inserimento tramite streaming IO
-def insert_db(db_name:str, table_name: str, db_from: str):
+def insert_db(db_name: str, table_name: str, db_from: str):
+    response = None
+    db_path = None
+
     try:
         db_name += ".sqlite"
         db_temp_name = db_name + ".csv"
         db_path = _DB_PATH_DATA.joinpath(db_name)
-        response = requests.get(db_from)
 
+        response = requests.get(db_from)
+    except requests.exceptions.RequestException as e:
+        print("Could not download the file", e)
+    finally:
         # Leggi il contenuto del file CSV direttamente in un DataFrame di pandas
         csv_content = response.content.decode('utf-8')
         df = pd.read_csv(StringIO(csv_content))
 
+    try:
         #db
         conn = sqlite3.connect(db_path)
         df.to_sql(table_name, conn, if_exists='replace', index=False)
-        conn.close()
 
     except Exception as e:
+        conn.rollback()
         raise RuntimeError(f"Errore durante l'inserimento nel database: {str(e)}")
+    finally:
+        conn.close()
 
 
-def insert_from_pd(db_name:str, table_name: str, db_csv_from: str):
+def insert_from_pd(db_name: str, table_name: str, db_csv_from: str):
     try:
         db_name += ".sqlite"
         db_temp_name = db_name + ".csv"
