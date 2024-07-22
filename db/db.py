@@ -46,8 +46,6 @@ def insert_db(db_name:str, table_name: str, db_from: str):
         db_temp_name = db_name + ".csv"
         db_path = _DB_PATH_DATA.joinpath(db_name)
         response = requests.get(db_from)
-        if response.status_code != 200:
-            raise RuntimeError(f"Errore durante il download del file: Codice di stato {response.status_code}")
 
         # Leggi il contenuto del file CSV direttamente in un DataFrame di pandas
         csv_content = response.content.decode('utf-8')
